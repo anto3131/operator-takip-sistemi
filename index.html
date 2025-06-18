@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - GitHub Pages</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        .success {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background: #28a745;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            display: none;
+        }
+        .info {
+            text-align: left;
+            margin-top: 30px;
+        }
+        .info li {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success">✅</div>
+        <h1>GitHub Pages Test Başarılı!</h1>
+        <p>Bu sayfayı görüyorsanız HTML ve CSS çalışıyor.</p>
+        
+        <button class="btn" onclick="testJS()">JavaScript Test</button>
+        <button class="btn" onclick="testLocalStorage()">LocalStorage Test</button>
+        
+        <div id="result" class="result"></div>
+        
+        <div class="info">
+            <h3>✅ Çalışan Özellikler:</h3>
+            <ul>
+                <li>HTML yapısı</li>
+                <li>CSS stilleri</li>
+                <li>Responsive tasarım</li>
+                <li>UTF-8 karakter desteği</li>
+                <li id="js-status">JavaScript: Test etmek için butona tıklayın</li>
+                <li id="storage-status">LocalStorage: Test etmek için butona tıklayın</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Sayfa yüklendiğinde konsola log
+        console.log('🚀 GitHub Pages test sayfası başarıyla yüklendi!');
+        console.log('📍 URL:', window.location.href);
+        console.log('🕐 Tarih:', new Date().toLocaleString('tr-TR'));
+        
+        function testJS() {
+            const result = document.getElementById('result');
+            const jsStatus = document.getElementById('js-status');
+            
+            result.style.display = 'block';
+            result.innerHTML = '<strong>🎉 JavaScript Çalışıyor!</strong><br>Dinamik içerik güncellemesi başarılı.';
+            jsStatus.innerHTML = 'JavaScript: ✅ Çalışıyor';
+            jsStatus.style.color = '#90EE90';
+            
+            console.log('✅ JavaScript test başarılı');
+        }
+        
+        function testLocalStorage() {
+            const result = document.getElementById('result');
+            const storageStatus = document.getElementById('storage-status');
+            
+            try {
+                // LocalStorage test
+                const testKey = 'github_pages_test';
+                const testValue = 'çalışıyor_' + Date.now();
+                
+                localStorage.setItem(testKey, testValue);
+                const retrieved = localStorage.getItem(testKey);
+                
+                if (retrieved === testValue) {
+                    result.style.display = 'block';
+                    result.innerHTML = '<strong>💾 LocalStorage Çalışıyor!</strong><br>Veri kaydetme ve okuma başarılı.';
+                    storageStatus.innerHTML = 'LocalStorage: ✅ Çalışıyor';
+                    storageStatus.style.color = '#90EE90';
+                    
+                    // Test verisini temizle
+                    localStorage.removeItem(testKey);
+                    console.log('✅ LocalStorage test başarılı');
+                } else {
+                    throw new Error('Veri eşleşmiyor');
+                }
+            } catch (error) {
+                result.style.display = 'block';
+                result.innerHTML = '<strong>⚠️ LocalStorage Sorunu!</strong><br>Hata: ' + error.message;
+                storageStatus.innerHTML = 'LocalStorage: ❌ Hata var';
+                storageStatus.style.color = '#FFB6C1';
+                
+                console.error('❌ LocalStorage test hatası:', error);
+            }
+        }
+        
+        // Sayfa bilgilerini konsola yazdır
+        window.addEventListener('load', function() {
+            console.log('📊 Sayfa Bilgileri:');
+            console.log('- User Agent:', navigator.userAgent);
+            console.log('- Viewport:', window.innerWidth + 'x' + window.innerHeight);
+            console.log('- HTTPS:', location.protocol === 'https:' ? 'Evet' : 'Hayır');
+        });
+    </script>
+</body>
+</html>
