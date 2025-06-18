@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operatör Performans Değerlendirme Sistemi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #4a6741 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 3px solid #e1e8ed;
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border-radius: 10px 10px 0 0;
+            margin-right: 5px;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .input-group input {
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+            width: 100%;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        .score-display {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+
+        .score-number {
+            font-size: 4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .score-grade {
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .detail-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .detail-card h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .detail-score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            background: #e9ecef;
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .batch-results {
+            margin-top: 25px;
+        }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-table th,
+        .result-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .result-table th {
+            background: #2c3e50;
+            color: white;
+            font-weight: 600;
+        }
+
+        .result-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .performance-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .badge-excellent { background: #d4edda; color: #155724; }
+        .badge-good { background: #d1ecf1; color: #0c5460; }
+        .badge-average { background: #fff3cd; color: #856404; }
+        .badge-poor { background: #f8d7da; color: #721c24; }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Modal Stili */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .close-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .score-summary {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .score-summary .total-score {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .score-summary .grade {
+            font-size: 1.2em;
+            font-weight: 600;
+            padding: 8px 20px;
+            border-radius: 25px;
+            display: inline-block;
+        }
+
+        .criteria-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 15px;
+        }
+
+        .criteria-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .criteria-info h4 {
+            margin: 0 0 8px 0;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .criteria-info p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .criteria-score {
+            text-align: right;
+        }
+
+        .criteria-score .points {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .criteria-score .max-points {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .operator-info {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .operator-info h3 {
+            margin: 0 0 15px 0;
+            color: #1565c0;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .info-item {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 3px solid #2196f3;
+        }
+
+        .info-item label {
+            font-size: 12px;
+            color: #666;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .info-item value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* Filtreleme Stili */
+        .filter-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid #28a745;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 8px 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #28a745;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .filter-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-apply {
+            background: #28a745;
+            color: white;
+        }
+
+        .filter-apply:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+
+        .filter-clear {
+            background: #6c757d;
+            color: white;
+        }
+
+        .filter-clear:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .results-summary {
+            background: #e3f2fd;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .results-summary span {
+            font-weight: 600;
+            color: #1565c0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Operatör Performans Değerlendirme Sistemi</h1>
+            <p>Otomatik puanlama ve analiz sistemi</p>
+        </div>
+
+        <div class="main-content">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('manual', this)">📝 Manuel Giriş</button>
+                <button class="tab" onclick="switchTab('history', this)">📊 Değerlendirme Geçmişi</button>
+                <button class="tab" onclick="switchTab('batch', this)">📁 Toplu Veri Aktarımı</button>
+                <button class="tab" onclick="switchTab('criteria', this)">📋 Kriterler</button>
+            </div>
+
+            <!-- Manuel Giriş Sekmesi -->
+            <div id="manual" class="tab-content active">
+                <div class="input-section">
+                    <h3>👨‍💼 Operatör Bilgileri</h3>
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label>Sicil No:</label>
+                            <input type="text" id="sicilNo" placeholder="Sicil numarası">
+                        </div>
+                        <div class="input-group">
+                            <label>Operatör Adı:</label>
+                            <input type="text" id="operatorAdi" placeholder="Ad Soyad">
+                        </div>
+                        <div class="input-group">
+                            <label>Çalıştığı Tezgah:</label>
+                            <input type="text" id="tezgah" placeholder="Tezgah adı">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-section">
+                    <h3>📊 Performans Verileri</h3>
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label>Hedef Üretim:</label>
+                            <input type="number" id="hedefUretim" placeholder="Hedeflenen sayı">
+                        </div>
+                        <div class="input-group">
+                            <label>Gerçekleşen Üretim:</label>
+                            <input type="number" id="gerceklesenUretim" placeholder="Gerçekleşen sayı">
+                        </div>
+                        <div class="input-group">
+                            <label>Kaçırılan Hata Adedi:</label>
+                            <input type="number" id="hataAdedi" placeholder="Hata sayısı">
+                        </div>
+                        <div class="input-group">
+                            <label>Hurda Adedi:</label>
+                            <input type="number" id="hurdaAdedi" placeholder="Hurda sayısı">
+                        </div>
+                        <div class="input-group">
+                            <label>İSG Uyum (%):</label>
+                            <input type="number" id="isgOrani" min="0" max="100" placeholder="0-100">
+                        </div>
+                        <div class="input-group">
+                            <label>Devamsızlık (%):</label>
+                            <input type="number" id="devamsizlikOrani" min="0" max="100" placeholder="0-100">
+                        </div>
+                        <div class="input-group">
+                            <label>Fazla Mesai Katılım (%):</label>
+                            <input type="number" id="fazlaMesaiOrani" min="0" max="100" placeholder="0-100">
+                        </div>
+                        <div class="input-group">
+                            <label>İyileştirme Faaliyetleri (Kaizen, SMED, 5S vb.):</label>
+                            <input type="number" id="iyilestirmeSayisi" min="0" placeholder="Faaliyet sayısı">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-section">
+                    <h3>🎯 Yetkinlik Değerlendirmesi</h3>
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label>Yetkinlik 1:</label>
+                            <input type="number" id="yetkinlik1" min="0" max="3" placeholder="0-3">
+                        </div>
+                        <div class="input-group">
+                            <label>Yetkinlik 2:</label>
+                            <input type="number" id="yetkinlik2" min="0" max="3" placeholder="0-3">
+                        </div>
+                        <div class="input-group">
+                            <label>Yetkinlik 3:</label>
+                            <input type="number" id="yetkinlik3" min="0" max="3" placeholder="0-3">
+                        </div>
+                        <div class="input-group">
+                            <label>Yetkinlik 4:</label>
+                            <input type="number" id="yetkinlik4" min="0" max="3" placeholder="0-3">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="calculate-btn" onclick="hesaplaPuan()">🧮 Performans Puanını Hesapla</button>
+                
+                <button onclick="formuTemizle()" style="background: #6c757d; color: white; border: none; padding: 12px 25px; font-size: 16px; font-weight: 600; border-radius: 10px; cursor: pointer; transition: all 0.3s ease; width: 100%; margin-top: 10px;">🧹 Formu Temizle</button>
+
+                <div id="sonuclar" class="results-section hidden">
+                    <div id="scoreDisplay" class="score-display">
+                        <div class="score-number" id="toplamPuan">0</div>
+                        <div class="score-grade" id="performansNotu">-</div>
+                    </div>
+
+                    <div class="details-grid" id="detaylar">
+                        <!-- Detay kartları buraya gelecek -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Değerlendirme Geçmişi Sekmesi -->
+            <div id="history" class="tab-content">
+                <div class="input-section">
+                    <h3>📊 Değerlendirme Geçmişi</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <p>Şimdiye kadar değerlendirilen operatörler ve performans puanları</p>
+                        <div>
+                            <button onclick="gecmisiTemizle()" style="padding: 8px 15px; background: #dc3545; color: white; border: none; border-radius: 5px; margin-right: 10px; cursor: pointer;">🗑️ Geçmişi Temizle</button>
+                            <button onclick="csvIndir()" style="padding: 8px 15px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">💾 CSV İndir</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtreleme Bölümü -->
+                <div class="filter-section">
+                    <h3>🔍 Gelişmiş Filtreleme</h3>
+                    <div class="filter-grid">
+                        <div class="filter-group">
+                            <label>Operatör Adı:</label>
+                            <input type="text" id="filterOperator" placeholder="Operatör adı ara...">
+                        </div>
+                        <div class="filter-group">
+                            <label>Sicil No:</label>
+                            <input type="text" id="filterSicil" placeholder="Sicil numarası ara...">
+                        </div>
+                        <div class="filter-group">
+                            <label>Tezgah:</label>
+                            <select id="filterTezgah">
+                                <option value="">Tüm Tezgahlar</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Performans Seviyesi:</label>
+                            <select id="filterPerformans">
+                                <option value="">Tüm Seviyeler</option>
+                                <option value="Mükemmel">Mükemmel (90-100)</option>
+                                <option value="İyi">İyi (80-89)</option>
+                                <option value="Orta">Orta (70-79)</option>
+                                <option value="Geliştirilmeli">Geliştirilmeli (0-69)</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Min Puan:</label>
+                            <input type="number" id="filterMinPuan" min="0" max="100" placeholder="Min puan">
+                        </div>
+                        <div class="filter-group">
+                            <label>Max Puan:</label>
+                            <input type="number" id="filterMaxPuan" min="0" max="100" placeholder="Max puan">
+                        </div>
+                        <div class="filter-group">
+                            <label>Başlangıç Tarihi:</label>
+                            <input type="date" id="filterBaslangicTarih">
+                        </div>
+                        <div class="filter-group">
+                            <label>Bitiş Tarihi:</label>
+                            <input type="date" id="filterBitisTarih">
+                        </div>
+                        <div class="filter-group">
+                            <label>Sıralama:</label>
+                            <select id="filterSiralama">
+                                <option value="">Varsayılan (Tarihe göre)</option>
+                                <option value="puan-yuksek">Puan: Yüksekten Düşüğe</option>
+                                <option value="puan-dusuk">Puan: Düşükten Yükseğe</option>
+                                <option value="ad-az">Ad: A-Z</option>
+                                <option value="ad-za">Ad: Z-A</option>
+                                <option value="sicil-az">Sicil: Küçükten Büyüğe</option>
+                                <option value="sicil-za">Sicil: Büyükten Küçüğe</option>
+                                <option value="tarih-yeni">Tarih: Yeniden Eskiye</option>
+                                <option value="tarih-eski">Tarih: Eskiden Yeniye</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-buttons">
+                        <button class="filter-btn filter-apply" onclick="filtreleriUygula()">🔍 Filtrele</button>
+                        <button class="filter-btn filter-clear" onclick="filtreleriTemizle()">🧹 Filtreleri Temizle</button>
+                    </div>
+                </div>
+
+                <!-- Sonuç Özeti -->
+                <div id="resultsSummary" class="results-summary" style="display: none;">
+                    <span id="summaryText">Gösterilen kayıt: 0</span>
+                </div>
+
+                <div id="historyResults">
+                    <div style="overflow-x: auto; max-width: 100%;">
+                        <table class="result-table" id="gecmisTablosu" style="min-width: 1400px;">
+                            <thead>
+                                <tr>
+                                    <th style="min-width: 80px;">Tarih</th>
+                                    <th style="min-width: 60px;">Sicil No</th>
+                                    <th style="min-width: 100px;">Operatör Adı</th>
+                                    <th style="min-width: 80px;">Tezgah</th>
+                                    <th style="min-width: 70px;">Toplam Puan</th>
+                                    <th style="min-width: 80px;">Performans</th>
+                                    <th style="min-width: 60px;">Üretim</th>
+                                    <th style="min-width: 50px;">Hata</th>
+                                    <th style="min-width: 50px;">Hurda</th>
+                                    <th style="min-width: 50px;">İSG</th>
+                                    <th style="min-width: 70px;">Yetkinlik</th>
+                                    <th style="min-width: 80px;">Devamsızlık</th>
+                                    <th style="min-width: 70px;">F.Mesai</th>
+                                    <th style="min-width: 80px;">İyileştirme</th>
+                                    <th style="min-width: 120px;">İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gecmisTabloBady">
+                                <tr>
+                                    <td colspan="15" style="text-align: center; padding: 40px; color: #666;">
+                                        Henüz değerlendirme yapılmamış. Manuel giriş ile operatör değerlendirmesi yapın.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="batch" class="tab-content">
+                <div class="input-section">
+                    <h3>📁 Excel Dosyası Yükleme</h3>
+                    <div class="upload-area" onclick="document.getElementById('excelFile').click()">
+                        <div class="upload-icon">📄</div>
+                        <h4>Excel dosyanızı buraya sürükleyin veya tıklayın</h4>
+                        <p>Operatör verilerini içeren .xlsx dosyasını seçin</p>
+                    </div>
+                    <input type="file" id="excelFile" class="file-input" accept=".xlsx,.xls" onchange="dosyaYukle(event)">
+                </div>
+
+                <div id="batchResults" class="batch-results hidden">
+                    <h3>📊 Toplu Değerlendirme Sonuçları</h3>
+                    <table class="result-table" id="sonucTablosu">
+                        <thead>
+                            <tr>
+                                <th>Sicil No</th>
+                                <th>Operatör Adı</th>
+                                <th>Tezgah</th>
+                                <th>Toplam Puan</th>
+                                <th>Performans</th>
+                                <th>Detay</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sonucTabloBady">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Kriterler Sekmesi -->
+            <div id="criteria" class="tab-content">
+                <div class="input-section">
+                    <h3>📋 Değerlendirme Kriterleri</h3>
+                    <div class="details-grid">
+                        <div class="detail-card">
+                            <h4>1. Üretilen Sayı (20 puan)</h4>
+                            <p>• %0 ve üzeri → 20 puan<br>
+                            • %0-%5 altında → 15 puan<br>
+                            • %5-%10 altında → 10 puan<br>
+                            • %10 altında → 0 puan</p>
+                        </div>
+                        <div class="detail-card">
+                            <h4>2. Kaçırılan Hatalı Ürün (15 puan)</h4>
+                            <p>• 0 hata → 15 puan<br>
+                            • %1 altı hata → 10 puan<br>
+                            • %1-%3 hata → 5 puan<br>
+                            • %3+ hata → 0 puan</p>
+                        </div>
+                        <div class="detail-card">
+                            <h4>3. Hurda Adedi (10 puan)</h4>
+                            <p>• %0-%1 → 10 puan<br>
+                            • %1-%3 → 7 puan<br>
+                            • %3-%5 → 4 puan<br>
+                            • %5+ → 0 puan</p>
+                        </div>
+                        <div class="detail-card">
+                            <h4>4. İSG Kurallara Uyum (10 puan)</h4>
+                            <p>• %100 → 10 puan<br>
+                            • %90-%99 → 9 puan<br>
+                            • %80-%89 → 8 puan<br>
+                            • %70-%79 → 5 puan<br>
+                            • %70 altı → 0 puan</p>
+                        </div>
+                        <div class="detail-card">
+                            <h4>5. Yetkinlik Değerlendirmesi (12 puan)</h4>
+                            <p>• 4 başlık (3 puan) → 12 puan<br>
+                            • Diğer durumlar → 0 puan<br>
+                            <small>* Her yetkinlik 0-3 aralığında değerlendirilir</small></p>
+                        </div>
+                        <div class="detail-card">
+                            <h4>6. Devamsızlık (10 puan)</h4>
+                            <p>• %0-%1 → 10 puan<br>
+                            • %1-%3 → 5 puan<br>
+                            • %3+ → 0 puan</p>
+                        </div>
+                        <div class="detail-card">
+                            <h4>7. Fazla Mesai Katılımı (10 puan)</h4>
+                            <p>• %100 → 10 puan<br>
+                            • %80-%99 → 8 puan<br>
+                            • %60-%79 → 6 puan<br>
+                            • %40-%59 → 4 puan<br>
+                            • %40 altı → 0 puan</p>
+                        </div>
+                        <div class="detail-card">
+                            <h4>8. İyileştirme Faaliyetleri (13 puan)</h4>
+                            <p>• 2+ faaliyet → 13 puan<br>
+                            • 1 faaliyet → 6 puan<br>
+                            • 0 faaliyet → 0 puan<br>
+                            <small>* Kaizen, SMED, 5S vb. projelere katılım</small></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detay Modal -->
+    <div id="detayModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalBaslik">Operatör Performans Detayı</h2>
+                <button class="close-btn" onclick="modalKapat()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="operator-info">
+                    <h3>👨‍💼 Operatör Bilgileri</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Sicil No</label>
+                            <value id="modalSicil">-</value>
+                        </div>
+                        <div class="info-item">
+                            <label>Operatör Adı</label>
+                            <value id="modalOperator">-</value>
+                        </div>
+                        <div class="info-item">
+                            <label>Çalıştığı Tezgah</label>
+                            <value id="modalTezgah">-</value>
+                        </div>
+                        <div class="info-item">
+                            <label>Değerlendirme Tarihi</label>
+                            <value id="modalTarih">-</value>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="score-summary">
+                    <div class="total-score" id="modalToplamPuan">0/100</div>
+                    <div class="grade" id="modalPerformansNotu">-</div>
+                </div>
+
+                <div class="criteria-grid" id="modalKriterler">
+                    <!-- Kriterler buraya gelecek -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        // Sekme değiştirme fonksiyonu
+        function switchTab(tabName, clickedButton) {
+            // Tüm sekmeleri gizle
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Tüm sekme butonlarını pasif yap
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Seçilen sekmeyi aktif yap
+            document.getElementById(tabName).classList.add('active');
+            
+            // Tıklanan butonu aktif yap
+            if (clickedButton) {
+                clickedButton.classList.add('active');
+            }
+        }
+
+        // Performans puanı hesaplama fonksiyonu
+        function hesaplaPuan() {
+            // Verileri al
+            const data = {
+                sicilNo: document.getElementById('sicilNo').value,
+                operatorAdi: document.getElementById('operatorAdi').value,
+                tezgah: document.getElementById('tezgah').value,
+                hedefUretim: parseFloat(document.getElementById('hedefUretim').value) || 0,
+                gerceklesenUretim: parseFloat(document.getElementById('gerceklesenUretim').value) || 0,
+                hataAdedi: parseFloat(document.getElementById('hataAdedi').value) || 0,
+                hurdaAdedi: parseFloat(document.getElementById('hurdaAdedi').value) || 0,
+                isgOrani: parseFloat(document.getElementById('isgOrani').value) || 0,
+                yetkinlik1: parseFloat(document.getElementById('yetkinlik1').value) || 0,
+                yetkinlik2: parseFloat(document.getElementById('yetkinlik2').value) || 0,
+                yetkinlik3: parseFloat(document.getElementById('yetkinlik3').value) || 0,
+                yetkinlik4: parseFloat(document.getElementById('yetkinlik4').value) || 0,
+                devamsizlikOrani: parseFloat(document.getElementById('devamsizlikOrani').value) || 0,
+                fazlaMesaiOrani: parseFloat(document.getElementById('fazlaMesaiOrani').value) || 0,
+                iyilestirmeSayisi: parseFloat(document.getElementById('iyilestirmeSayisi').value) || 0
+            };
+
+            // Puanlama hesapla
+            const sonuc = performansPuaniHesapla(data);
+            
+            // Sonuçları göster
+            gorselSonucGoster(sonuc);
+            
+            // Geçmişe kaydet
+            gecmiseKaydet(sonuc);
+        }
+
+        // Ana puanlama algoritması
+        function performansPuaniHesapla(data) {
+            let toplam = 0;
+            let detaylar = [];
+
+            // 1. Üretilen Sayı (20 puan)
+            const uretimYuzdesi = data.hedefUretim > 0 ? 
+                ((data.gerceklesenUretim / data.hedefUretim) - 1) * 100 : 0;
+            let uretimPuan = 0;
+            if (uretimYuzdesi >= 0) uretimPuan = 20;
+            else if (uretimYuzdesi >= -5) uretimPuan = 15;
+            else if (uretimYuzdesi >= -10) uretimPuan = 10;
+            else uretimPuan = 0;
+
+            detaylar.push({
+                kriter: "Üretilen Sayı",
+                deger: `${data.gerceklesenUretim}/${data.hedefUretim} (${uretimYuzdesi >= 0 ? '+' : ''}${uretimYuzdesi.toFixed(1)}%)`,
+                puan: uretimPuan,
+                maksimum: 20
+            });
+            toplam += uretimPuan;
+
+            // 2. Kaçırılan Hatalı Ürün Adedi (15 puan)
+            const hataOrani = data.gerceklesenUretim > 0 ? 
+                (data.hataAdedi / data.gerceklesenUretim) * 100 : 0;
+            let hataPuan = 0;
+            if (data.hataAdedi === 0) hataPuan = 15;
+            else if (hataOrani < 1) hataPuan = 10;
+            else if (hataOrani <= 3) hataPuan = 5;
+            else hataPuan = 0;
+
+            detaylar.push({
+                kriter: "Kaçırılan Hata",
+                deger: `${data.hataAdedi} adet (${hataOrani.toFixed(2)}%)`,
+                puan: hataPuan,
+                maksimum: 15
+            });
+            toplam += hataPuan;
+
+            // 3. Hurda Adedi (10 puan)
+            const hurdaOrani = data.gerceklesenUretim > 0 ? 
+                (data.hurdaAdedi / data.gerceklesenUretim) * 100 : 0;
+            let hurdaPuan = 0;
+            if (hurdaOrani <= 1) hurdaPuan = 10;
+            else if (hurdaOrani <= 3) hurdaPuan = 7;
+            else if (hurdaOrani <= 5) hurdaPuan = 4;
+            else hurdaPuan = 0;
+
+            detaylar.push({
+                kriter: "Hurda Adedi",
+                deger: `${data.hurdaAdedi} adet (${hurdaOrani.toFixed(2)}%)`,
+                puan: hurdaPuan,
+                maksimum: 10
+            });
+            toplam += hurdaPuan;
+
+            // 4. İSG Kurallara Uyum (10 puan)
+            let isgPuan = 0;
+            if (data.isgOrani === 100) isgPuan = 10;
+            else if (data.isgOrani >= 90) isgPuan = 9;
+            else if (data.isgOrani >= 80) isgPuan = 8;
+            else if (data.isgOrani >= 70) isgPuan = 5;
+            else isgPuan = 0;
+
+            detaylar.push({
+                kriter: "İSG Uyum",
+                deger: `${data.isgOrani}%`,
+                puan: isgPuan,
+                maksimum: 10
+            });
+            toplam += isgPuan;
+
+            // 5. Yetkinlik Değerlendirmesi (12 puan)
+            const yetkinlikBasligi = [data.yetkinlik1, data.yetkinlik2, data.yetkinlik3, data.yetkinlik4]
+                .filter(y => y >= 3).length;
+            let yetkinlikPuan = 0;
+            if (yetkinlikBasligi === 4) yetkinlikPuan = 12;
+
+            detaylar.push({
+                kriter: "Yetkinlik",
+                deger: `${yetkinlikBasligi}/4 başlık`,
+                puan: yetkinlikPuan,
+                maksimum: 12
+            });
+            toplam += yetkinlikPuan;
+
+            // 6. Devamsızlık (10 puan)
+            let devamsizlikPuan = 0;
+            if (data.devamsizlikOrani <= 1) devamsizlikPuan = 10;
+            else if (data.devamsizlikOrani <= 3) devamsizlikPuan = 5;
+            else devamsizlikPuan = 0;
+
+            detaylar.push({
+                kriter: "Devamsızlık",
+                deger: `${data.devamsizlikOrani}%`,
+                puan: devamsizlikPuan,
+                maksimum: 10
+            });
+            toplam += devamsizlikPuan;
+
+            // 7. Fazla Mesai Katılımı (10 puan)
+            let fazlaMesaiPuan = 0;
+            if (data.fazlaMesaiOrani === 100) fazlaMesaiPuan = 10;
+            else if (data.fazlaMesaiOrani >= 80) fazlaMesaiPuan = 8;
+            else if (data.fazlaMesaiOrani >= 60) fazlaMesaiPuan = 6;
+            else if (data.fazlaMesaiOrani >= 40) fazlaMesaiPuan = 4;
+            else fazlaMesaiPuan = 0;
+
+            detaylar.push({
+                kriter: "Fazla Mesai",
+                deger: `${data.fazlaMesaiOrani}%`,
+                puan: fazlaMesaiPuan,
+                maksimum: 10
+            });
+            toplam += fazlaMesaiPuan;
+
+            // 8. İşbirliği/İletişim Faaliyetleri (13 puan)
+            let isbirligiPuan = 0;
+            if (data.iyilestirmeSayisi >= 2) isbirligiPuan = 13;
+            else if (data.iyilestirmeSayisi === 1) isbirligiPuan = 6;
+            else isbirligiPuan = 0;
+
+            detaylar.push({
+                kriter: "İyileştirme Faaliyetleri",
+                deger: `${data.iyilestirmeSayisi} adet`,
+                puan: isbirligiPuan,
+                maksimum: 13
+            });
+            toplam += isbirligiPuan;
+
+            // Performans notu belirle
+            let performansNotu = "";
+            if (toplam >= 90) performansNotu = "Mükemmel";
+            else if (toplam >= 80) performansNotu = "İyi";
+            else if (toplam >= 70) performansNotu = "Orta";
+            else performansNotu = "Geliştirilmeli";
+
+            return {
+                operatorAdi: data.operatorAdi,
+                sicilNo: data.sicilNo,
+                tezgah: data.tezgah,
+                toplamPuan: toplam,
+                performansNotu: performansNotu,
+                detaylar: detaylar,
+                rawData: data,
+                tarih: new Date().toLocaleDateString('tr-TR')
+            };
+        }
+
+        // Sonuçları görsel olarak göster
+        function gorselSonucGoster(sonuc) {
+            document.getElementById('toplamPuan').textContent = sonuc.toplamPuan;
+            document.getElementById('performansNotu').textContent = sonuc.performansNotu;
+
+            const detaylarContainer = document.getElementById('detaylar');
+            detaylarContainer.innerHTML = '';
+
+            sonuc.detaylar.forEach(detay => {
+                const card = document.createElement('div');
+                card.className = 'detail-card';
+                card.innerHTML = `
+                    <h4>${detay.kriter}</h4>
+                    <p>${detay.deger}</p>
+                    <div class="detail-score">${detay.puan}/${detay.maksimum}</div>
+                `;
+                detaylarContainer.appendChild(card);
+            });
+
+            document.getElementById('sonuclar').classList.remove('hidden');
+        }
+
+        // Excel dosyası yükleme
+        function dosyaYukle(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                topluDegerlendirmeYap(jsonData);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Toplu değerlendirme
+        function topluDegerlendirmeYap(excelData) {
+            if (excelData.length < 2) {
+                alert('Excel dosyasında yeterli veri bulunamadı!');
+                return;
+            }
+
+            const headers = excelData[0];
+            const results = [];
+
+            // İlk satır başlık olduğu için 1'den başla
+            for (let i = 1; i < excelData.length; i++) {
+                const row = excelData[i];
+                if (row.length === 0) continue; // Boş satırları atla
+
+                const data = {
+                    sicilNo: row[0] || '',
+                    operatorAdi: row[1] || '',
+                    tezgah: row[2] || '',
+                    hedefUretim: parseFloat(row[3]) || 0,
+                    gerceklesenUretim: parseFloat(row[4]) || 0,
+                    hataAdedi: parseFloat(row[5]) || 0,
+                    hurdaAdedi: parseFloat(row[6]) || 0,
+                    isgOrani: parseFloat(row[7]) || 0,
+                    yetkinlik1: parseFloat(row[8]) || 0,
+                    yetkinlik2: parseFloat(row[9]) || 0,
+                    yetkinlik3: parseFloat(row[10]) || 0,
+                    yetkinlik4: parseFloat(row[11]) || 0,
+                    devamsizlikOrani: parseFloat(row[12]) || 0,
+                    fazlaMesaiOrani: parseFloat(row[13]) || 0,
+                    iyilestirmeSayisi: parseFloat(row[14]) || 0
+                };
+
+                const sonuc = performansPuaniHesapla(data);
+                results.push(sonuc);
+                
+                // Toplu değerlendirme sonuçlarını da geçmişe kaydet
+                gecmiseKaydet(sonuc);
+            }
+
+            topluSonuclariGoster(results);
+        }
+
+        // Toplu sonuçları tablo halinde göster
+        function topluSonuclariGoster(results) {
+            const tbody = document.getElementById('sonucTabloBady');
+            tbody.innerHTML = '';
+
+            results.forEach((sonuc, index) => {
+                const row = document.createElement('tr');
+                
+                let badgeClass = '';
+                if (sonuc.toplamPuan >= 90) badgeClass = 'badge-excellent';
+                else if (sonuc.toplamPuan >= 80) badgeClass = 'badge-good';
+                else if (sonuc.toplamPuan >= 70) badgeClass = 'badge-average';
+                else badgeClass = 'badge-poor';
+
+                row.innerHTML = `
+                    <td>${sonuc.sicilNo}</td>
+                    <td>${sonuc.operatorAdi}</td>
+                    <td>${sonuc.tezgah}</td>
+                    <td><strong>${sonuc.toplamPuan}/100</strong></td>
+                    <td><span class="performance-badge ${badgeClass}">${sonuc.performansNotu}</span></td>
+                    <td><button onclick="detayGoster(${index})" style="padding: 5px 10px; border: none; background: #667eea; color: white; border-radius: 5px; cursor: pointer;">Detay</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Sonuçları saklayalım detay gösterim için
+            window.topluSonuclar = results;
+            
+            document.getElementById('batchResults').classList.remove('hidden');
+        }
+
+        // Detay gösterimi için modal fonksiyonu
+        function detayGoster(index) {
+            const sonuc = window.topluSonuclar[index];
+            if (!sonuc) return;
+
+            // Modal bilgilerini doldur
+            document.getElementById('modalBaslik').textContent = `${sonuc.operatorAdi} - Performans Detayı`;
+            document.getElementById('modalSicil').textContent = sonuc.sicilNo;
+            document.getElementById('modalOperator').textContent = sonuc.operatorAdi;
+            document.getElementById('modalTezgah').textContent = sonuc.tezgah;
+            document.getElementById('modalTarih').textContent = sonuc.tarih;
+            document.getElementById('modalToplamPuan').textContent = `${sonuc.toplamPuan}/100`;
+            document.getElementById('modalPerformansNotu').textContent = sonuc.performansNotu;
+
+            // Performans notu rengini ayarla
+            const gradeElement = document.getElementById('modalPerformansNotu');
+            gradeElement.className = 'grade';
+            if (sonuc.toplamPuan >= 90) gradeElement.classList.add('badge-excellent');
+            else if (sonuc.toplamPuan >= 80) gradeElement.classList.add('badge-good');
+            else if (sonuc.toplamPuan >= 70) gradeElement.classList.add('badge-average');
+            else gradeElement.classList.add('badge-poor');
+
+            // Kriterleri doldur
+            const kriterlerContainer = document.getElementById('modalKriterler');
+            kriterlerContainer.innerHTML = '';
+
+            sonuc.detaylar.forEach(detay => {
+                const kriterDiv = document.createElement('div');
+                kriterDiv.className = 'criteria-item';
+                
+                // Kriter ikonları
+                let icon = '📊';
+                if (detay.kriter.includes('Üretilen')) icon = '🏭';
+                else if (detay.kriter.includes('Hata')) icon = '🔍';
+                else if (detay.kriter.includes('Hurda')) icon = '♻️';
+                else if (detay.kriter.includes('İSG')) icon = '🛡️';
+                else if (detay.kriter.includes('Yetkinlik')) icon = '🎯';
+                else if (detay.kriter.includes('Devamsızlık')) icon = '📅';
+                else if (detay.kriter.includes('Fazla Mesai')) icon = '⏰';
+                else if (detay.kriter.includes('İyileştirme')) icon = '💡';
+
+                kriterDiv.innerHTML = `
+                    <div class="criteria-info">
+                        <h4>${icon} ${detay.kriter}</h4>
+                        <p>${detay.deger}</p>
+                    </div>
+                    <div class="criteria-score">
+                        <div class="points">${detay.puan}</div>
+                        <div class="max-points">/${detay.maksimum}</div>
+                    </div>
+                `;
+                kriterlerContainer.appendChild(kriterDiv);
+            });
+
+            // Modalı göster
+            document.getElementById('detayModal').style.display = 'block';
+        }
+
+        // Drag & Drop fonksiyonalitesi
+        const uploadArea = document.querySelector('.upload-area');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('excelFile').files = files;
+                dosyaYukle({ target: { files: files } });
+            }
+        });
+
+        // Sayfa yüklendiğinde örnek veriyi doldur
+        window.onload = function() {
+            // Form boş kalacak - otomatik doldurma kaldırıldı
+            console.log('Operatör Performans Değerlendirme Sistemi hazır!');
+        };
+
+        // Geçmiş kayıt fonksiyonları
+        let degerlendirmeGecmisi = [];
+        let filtrelenmisGecmis = [];
+
+        function gecmiseKaydet(sonuc) {
+            degerlendirmeGecmisi.unshift(sonuc);
+            tezgahListesiniGuncelle();
+            gecmisTablosunuGuncelle();
+        }
+
+        function tezgahListesiniGuncelle() {
+            const tezgahSelect = document.getElementById('filterTezgah');
+            const mevcutTezgahlar = [...new Set(degerlendirmeGecmisi.map(s => s.tezgah))];
+            
+            // Mevcut seçenekleri temizle (ilk seçenek hariç)
+            tezgahSelect.innerHTML = '<option value="">Tüm Tezgahlar</option>';
+            
+            // Yeni tezgahları ekle
+            mevcutTezgahlar.forEach(tezgah => {
+                if (tezgah) {
+                    const option = document.createElement('option');
+                    option.value = tezgah;
+                    option.textContent = tezgah;
+                    tezgahSelect.appendChild(option);
+                }
+            });
+        }
+
+        function filtreleriUygula() {
+            const filters = {
+                operator: document.getElementById('filterOperator').value.toLowerCase(),
+                sicil: document.getElementById('filterSicil').value.toLowerCase(),
+                tezgah: document.getElementById('filterTezgah').value,
+                performans: document.getElementById('filterPerformans').value,
+                minPuan: parseInt(document.getElementById('filterMinPuan').value) || 0,
+                maxPuan: parseInt(document.getElementById('filterMaxPuan').value) || 100,
+                baslangicTarih: document.getElementById('filterBaslangicTarih').value,
+                bitisTarih: document.getElementById('filterBitisTarih').value,
+                siralama: document.getElementById('filterSiralama').value
+            };
+
+            filtrelenmisGecmis = degerlendirmeGecmisi.filter(sonuc => {
+                // Operatör adı filtresi
+                if (filters.operator && !sonuc.operatorAdi.toLowerCase().includes(filters.operator)) {
+                    return false;
+                }
+
+                // Sicil no filtresi
+                if (filters.sicil && !sonuc.sicilNo.toString().toLowerCase().includes(filters.sicil)) {
+                    return false;
+                }
+
+                // Tezgah filtresi
+                if (filters.tezgah && sonuc.tezgah !== filters.tezgah) {
+                    return false;
+                }
+
+                // Performans seviyesi filtresi
+                if (filters.performans && sonuc.performansNotu !== filters.performans) {
+                    return false;
+                }
+
+                // Puan aralığı filtresi
+                if (sonuc.toplamPuan < filters.minPuan || sonuc.toplamPuan > filters.maxPuan) {
+                    return false;
+                }
+
+                // Tarih filtresi
+                if (filters.baslangicTarih || filters.bitisTarih) {
+                    const sonucTarih = new Date(sonuc.tarih.split('.').reverse().join('-'));
+                    
+                    if (filters.baslangicTarih) {
+                        const baslangic = new Date(filters.baslangicTarih);
+                        if (sonucTarih < baslangic) return false;
+                    }
+                    
+                    if (filters.bitisTarih) {
+                        const bitis = new Date(filters.bitisTarih);
+                        if (sonucTarih > bitis) return false;
+                    }
+                }
+
+                return true;
+            });
+
+            // Sıralama uygula
+            if (filters.siralama) {
+                switch (filters.siralama) {
+                    case 'puan-yuksek':
+                        filtrelenmisGecmis.sort((a, b) => b.toplamPuan - a.toplamPuan);
+                        break;
+                    case 'puan-dusuk':
+                        filtrelenmisGecmis.sort((a, b) => a.toplamPuan - b.toplamPuan);
+                        break;
+                    case 'ad-az':
+                        filtrelenmisGecmis.sort((a, b) => a.operatorAdi.localeCompare(b.operatorAdi, 'tr'));
+                        break;
+                    case 'ad-za':
+                        filtrelenmisGecmis.sort((a, b) => b.operatorAdi.localeCompare(a.operatorAdi, 'tr'));
+                        break;
+                    case 'sicil-az':
+                        filtrelenmisGecmis.sort((a, b) => a.sicilNo.toString().localeCompare(b.sicilNo.toString(), undefined, {numeric: true}));
+                        break;
+                    case 'sicil-za':
+                        filtrelenmisGecmis.sort((a, b) => b.sicilNo.toString().localeCompare(a.sicilNo.toString(), undefined, {numeric: true}));
+                        break;
+                    case 'tarih-yeni':
+                        filtrelenmisGecmis.sort((a, b) => {
+                            const dateA = new Date(a.tarih.split('.').reverse().join('-'));
+                            const dateB = new Date(b.tarih.split('.').reverse().join('-'));
+                            return dateB - dateA;
+                        });
+                        break;
+                    case 'tarih-eski':
+                        filtrelenmisGecmis.sort((a, b) => {
+                            const dateA = new Date(a.tarih.split('.').reverse().join('-'));
+                            const dateB = new Date(b.tarih.split('.').reverse().join('-'));
+                            return dateA - dateB;
+                        });
+                        break;
+                }
+            }
+
+            gecmisTablosunuGuncelle(true);
+            sonucOzetiniGoster();
+        }
+
+        function filtreleriTemizle() {
+            document.getElementById('filterOperator').value = '';
+            document.getElementById('filterSicil').value = '';
+            document.getElementById('filterTezgah').value = '';
+            document.getElementById('filterPerformans').value = '';
+            document.getElementById('filterMinPuan').value = '';
+            document.getElementById('filterMaxPuan').value = '';
+            document.getElementById('filterBaslangicTarih').value = '';
+            document.getElementById('filterBitisTarih').value = '';
+            document.getElementById('filterSiralama').value = '';
+
+            filtrelenmisGecmis = [];
+            gecmisTablosunuGuncelle();
+            document.getElementById('resultsSummary').style.display = 'none';
+        }
+
+        function sonucOzetiniGoster() {
+            const toplamKayit = degerlendirmeGecmisi.length;
+            const gosterilenKayit = filtrelenmisGecmis.length;
+            
+            const summary = document.getElementById('resultsSummary');
+            const summaryText = document.getElementById('summaryText');
+            
+            if (toplamKayit === 0) {
+                summary.style.display = 'none';
+                return;
+            }
+
+            summary.style.display = 'block';
+            
+            if (filtrelenmisGecmis.length === 0 && toplamKayit > 0) {
+                summaryText.textContent = `Filtreyle eşleşen kayıt bulunamadı. Toplam kayıt: ${toplamKayit}`;
+            } else if (gosterilenKayit === toplamKayit) {
+                summaryText.textContent = `Toplam ${toplamKayit} kayıt gösteriliyor.`;
+            } else {
+                summaryText.textContent = `${gosterilenKayit} kayıt gösteriliyor (Toplam: ${toplamKayit})`;
+            }
+        }
+
+        function gecmisTablosunuGuncelle(filtered = false) {
+            const tbody = document.getElementById('gecmisTabloBady');
+            const veriKaynaği = filtered ? filtrelenmisGecmis : degerlendirmeGecmisi;
+            
+            if (veriKaynaği.length === 0) {
+                let mesaj = filtered ? 
+                    'Filtreyle eşleşen kayıt bulunamadı.' : 
+                    'Henüz değerlendirme yapılmamış. Manuel giriş ile operatör değerlendirmesi yapın.';
+                    
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="15" style="text-align: center; padding: 40px; color: #666;">
+                            ${mesaj}
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            
+            veriKaynaği.forEach((sonuc, index) => {
+                const row = document.createElement('tr');
+                
+                let badgeClass = '';
+                if (sonuc.toplamPuan >= 90) badgeClass = 'badge-excellent';
+                else if (sonuc.toplamPuan >= 80) badgeClass = 'badge-good';
+                else if (sonuc.toplamPuan >= 70) badgeClass = 'badge-average';
+                else badgeClass = 'badge-poor';
+
+                // Her kriterin puanını bul
+                const uretimPuan = sonuc.detaylar.find(d => d.kriter === "Üretilen Sayı")?.puan || 0;
+                const hataPuan = sonuc.detaylar.find(d => d.kriter === "Kaçırılan Hata")?.puan || 0;
+                const hurdaPuan = sonuc.detaylar.find(d => d.kriter === "Hurda Adedi")?.puan || 0;
+                const isgPuan = sonuc.detaylar.find(d => d.kriter === "İSG Uyum")?.puan || 0;
+                const yetkinlikPuan = sonuc.detaylar.find(d => d.kriter === "Yetkinlik")?.puan || 0;
+                const devamsizlikPuan = sonuc.detaylar.find(d => d.kriter === "Devamsızlık")?.puan || 0;
+                const fazlaMesaiPuan = sonuc.detaylar.find(d => d.kriter === "Fazla Mesai")?.puan || 0;
+                const iyilestirmePuan = sonuc.detaylar.find(d => d.kriter === "İyileştirme Faaliyetleri")?.puan || 0;
+
+                // Orijinal index'i bul (filtered durumunda)
+                const originalIndex = filtered ? degerlendirmeGecmisi.indexOf(sonuc) : index;
+
+                row.innerHTML = `
+                    <td>${sonuc.tarih}</td>
+                    <td>${sonuc.sicilNo}</td>
+                    <td><strong>${sonuc.operatorAdi}</strong></td>
+                    <td>${sonuc.tezgah}</td>
+                    <td><strong>${sonuc.toplamPuan}/100</strong></td>
+                    <td><span class="performance-badge ${badgeClass}">${sonuc.performansNotu}</span></td>
+                    <td>${uretimPuan}/20</td>
+                    <td>${hataPuan}/15</td>
+                    <td>${hurdaPuan}/10</td>
+                    <td>${isgPuan}/10</td>
+                    <td>${yetkinlikPuan}/12</td>
+                    <td>${devamsizlikPuan}/10</td>
+                    <td>${fazlaMesaiPuan}/10</td>
+                    <td>${iyilestirmePuan}/13</td>
+                    <td>
+                        <button onclick="detayGosterGecmis(${originalIndex})" style="padding: 3px 8px; margin: 2px; border: none; background: #667eea; color: white; border-radius: 3px; cursor: pointer; font-size: 12px;">Detay</button>
+                        <button onclick="gecmistenSil(${originalIndex})" style="padding: 3px 8px; margin: 2px; border: none; background: #dc3545; color: white; border-radius: 3px; cursor: pointer; font-size: 12px;">Sil</button>
+                        <button onclick="tekrarDegerlendirme(${originalIndex})" style="padding: 3px 8px; margin: 2px; border: none; background: #28a745; color: white; border-radius: 3px; cursor: pointer; font-size: 12px;">Tekrar</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function detayGosterGecmis(index) {
+            const sonuc = degerlendirmeGecmisi[index];
+            if (!sonuc) return;
+
+            // Modal bilgilerini doldur
+            document.getElementById('modalBaslik').textContent = `${sonuc.operatorAdi} - Performans Detayı`;
+            document.getElementById('modalSicil').textContent = sonuc.sicilNo;
+            document.getElementById('modalOperator').textContent = sonuc.operatorAdi;
+            document.getElementById('modalTezgah').textContent = sonuc.tezgah;
+            document.getElementById('modalTarih').textContent = sonuc.tarih;
+            document.getElementById('modalToplamPuan').textContent = `${sonuc.toplamPuan}/100`;
+            document.getElementById('modalPerformansNotu').textContent = sonuc.performansNotu;
+
+            // Performans notu rengini ayarla
+            const gradeElement = document.getElementById('modalPerformansNotu');
+            gradeElement.className = 'grade';
+            if (sonuc.toplamPuan >= 90) gradeElement.classList.add('badge-excellent');
+            else if (sonuc.toplamPuan >= 80) gradeElement.classList.add('badge-good');
+            else if (sonuc.toplamPuan >= 70) gradeElement.classList.add('badge-average');
+            else gradeElement.classList.add('badge-poor');
+
+            // Kriterleri doldur
+            const kriterlerContainer = document.getElementById('modalKriterler');
+            kriterlerContainer.innerHTML = '';
+
+            sonuc.detaylar.forEach(detay => {
+                const kriterDiv = document.createElement('div');
+                kriterDiv.className = 'criteria-item';
+                
+                // Kriter ikonları
+                let icon = '📊';
+                if (detay.kriter.includes('Üretilen')) icon = '🏭';
+                else if (detay.kriter.includes('Hata')) icon = '🔍';
+                else if (detay.kriter.includes('Hurda')) icon = '♻️';
+                else if (detay.kriter.includes('İSG')) icon = '🛡️';
+                else if (detay.kriter.includes('Yetkinlik')) icon = '🎯';
+                else if (detay.kriter.includes('Devamsızlık')) icon = '📅';
+                else if (detay.kriter.includes('Fazla Mesai')) icon = '⏰';
+                else if (detay.kriter.includes('İyileştirme')) icon = '💡';
+
+                kriterDiv.innerHTML = `
+                    <div class="criteria-info">
+                        <h4>${icon} ${detay.kriter}</h4>
+                        <p>${detay.deger}</p>
+                    </div>
+                    <div class="criteria-score">
+                        <div class="points">${detay.puan}</div>
+                        <div class="max-points">/${detay.maksimum}</div>
+                    </div>
+                `;
+                kriterlerContainer.appendChild(kriterDiv);
+            });
+
+            // Modalı göster
+            document.getElementById('detayModal').style.display = 'block';
+        }
+
+        function modalKapat() {
+            document.getElementById('detayModal').style.display = 'none';
+        }
+
+        // Modal dışına tıklandığında kapat
+        window.onclick = function(event) {
+            const modal = document.getElementById('detayModal');
+            if (event.target == modal) {
+                modalKapat();
+            }
+        }
+
+        function gecmistenSil(index) {
+            if (confirm('Bu değerlendirmeyi silmek istediğinizden emin misiniz?')) {
+                degerlendirmeGecmisi.splice(index, 1);
+                tezgahListesiniGuncelle();
+                
+                // Eğer filtre aktifse, filtreyi yeniden uygula
+                const filterOperator = document.getElementById('filterOperator').value;
+                const filterSicil = document.getElementById('filterSicil').value;
+                const filterTezgah = document.getElementById('filterTezgah').value;
+                const filterPerformans = document.getElementById('filterPerformans').value;
+                const filterMinPuan = document.getElementById('filterMinPuan').value;
+                const filterMaxPuan = document.getElementById('filterMaxPuan').value;
+                const filterBaslangicTarih = document.getElementById('filterBaslangicTarih').value;
+                const filterBitisTarih = document.getElementById('filterBitisTarih').value;
+                
+                const filtreAktif = filterOperator || filterSicil || filterTezgah || filterPerformans || 
+                                  filterMinPuan || filterMaxPuan || filterBaslangicTarih || filterBitisTarih;
+                
+                if (filtreAktif) {
+                    filtreleriUygula();
+                } else {
+                    gecmisTablosunuGuncelle();
+                    document.getElementById('resultsSummary').style.display = 'none';
+                }
+            }
+        }
+
+        function tekrarDegerlendirme(index) {
+            const sonuc = degerlendirmeGecmisi[index];
+            if (!sonuc || !sonuc.rawData) return;
+
+            // Formu doldur
+            const data = sonuc.rawData;
+            document.getElementById('sicilNo').value = data.sicilNo || '';
+            document.getElementById('operatorAdi').value = data.operatorAdi || '';
+            document.getElementById('tezgah').value = data.tezgah || '';
+            document.getElementById('hedefUretim').value = data.hedefUretim || '';
+            document.getElementById('gerceklesenUretim').value = data.gerceklesenUretim || '';
+            document.getElementById('hataAdedi').value = data.hataAdedi || '';
+            document.getElementById('hurdaAdedi').value = data.hurdaAdedi || '';
+            document.getElementById('isgOrani').value = data.isgOrani || '';
+            document.getElementById('yetkinlik1').value = data.yetkinlik1 || '';
+            document.getElementById('yetkinlik2').value = data.yetkinlik2 || '';
+            document.getElementById('yetkinlik3').value = data.yetkinlik3 || '';
+            document.getElementById('yetkinlik4').value = data.yetkinlik4 || '';
+            document.getElementById('devamsizlikOrani').value = data.devamsizlikOrani || '';
+            document.getElementById('fazlaMesaiOrani').value = data.fazlaMesaiOrani || '';
+            document.getElementById('iyilestirmeSayisi').value = data.iyilestirmeSayisi || '';
+
+            // Manuel sekmeye geç
+            switchTab('manual', document.querySelector('.tab'));
+            
+            alert(`${sonuc.operatorAdi} verileri forma yüklendi. Düzenleyip tekrar değerlendirebilirsiniz.`);
+        }
+
+        function formuTemizle() {
+            // Tüm input alanlarını temizle
+            document.getElementById('sicilNo').value = '';
+            document.getElementById('operatorAdi').value = '';
+            document.getElementById('tezgah').value = '';
+            document.getElementById('hedefUretim').value = '';
+            document.getElementById('gerceklesenUretim').value = '';
+            document.getElementById('hataAdedi').value = '';
+            document.getElementById('hurdaAdedi').value = '';
+            document.getElementById('isgOrani').value = '';
+            document.getElementById('yetkinlik1').value = '';
+            document.getElementById('yetkinlik2').value = '';
+            document.getElementById('yetkinlik3').value = '';
+            document.getElementById('yetkinlik4').value = '';
+            document.getElementById('devamsizlikOrani').value = '';
+            document.getElementById('fazlaMesaiOrani').value = '';
+            document.getElementById('iyilestirmeSayisi').value = '';
+            
+            // Sonuç alanını gizle
+            document.getElementById('sonuclar').classList.add('hidden');
+            
+            // İlk input'a odaklan
+            document.getElementById('sicilNo').focus();
+        }
+
+        function gecmisiTemizle() {
+            if (confirm('Tüm değerlendirme geçmişini silmek istediğinizden emin misiniz?')) {
+                degerlendirmeGecmisi = [];
+                gecmisTablosunuGuncelle();
+                tezgahListesiniGuncelle();
+                document.getElementById('resultsSummary').style.display = 'none';
+            }
+        }
+
+        function csvIndir() {
+            if (degerlendirmeGecmisi.length === 0) {
+                alert('İndirilecek veri bulunmuyor!');
+                return;
+            }
+
+            // Değerlendirme geçmişi tablosundaki sütunlarla aynı format
+            let csv = 'Tarih;Sicil No;Operatör Adı;Tezgah;Toplam Puan;Performans;Üretim Puanı;Hata Puanı;Hurda Puanı;İSG Puanı;Yetkinlik Puanı;Devamsızlık Puanı;Fazla Mesai Puanı;İyileştirme Puanı\n';
+            
+            degerlendirmeGecmisi.forEach(sonuc => {
+                // Her kriterin puanını bul
+                const uretimPuan = sonuc.detaylar.find(d => d.kriter === "Üretilen Sayı")?.puan || 0;
+                const hataPuan = sonuc.detaylar.find(d => d.kriter === "Kaçırılan Hata")?.puan || 0;
+                const hurdaPuan = sonuc.detaylar.find(d => d.kriter === "Hurda Adedi")?.puan || 0;
+                const isgPuan = sonuc.detaylar.find(d => d.kriter === "İSG Uyum")?.puan || 0;
+                const yetkinlikPuan = sonuc.detaylar.find(d => d.kriter === "Yetkinlik")?.puan || 0;
+                const devamsizlikPuan = sonuc.detaylar.find(d => d.kriter === "Devamsızlık")?.puan || 0;
+                const fazlaMesaiPuan = sonuc.detaylar.find(d => d.kriter === "Fazla Mesai")?.puan || 0;
+                const iyilestirmePuan = sonuc.detaylar.find(d => d.kriter === "İyileştirme Faaliyetleri")?.puan || 0;
+
+                // Excel için noktalı virgül kullan ve tırnak işaretleri ekle
+                csv += `${sonuc.tarih};${sonuc.sicilNo};"${sonuc.operatorAdi}";"${sonuc.tezgah}";${sonuc.toplamPuan};"${sonuc.performansNotu}";${uretimPuan};${hataPuan};${hurdaPuan};${isgPuan};${yetkinlikPuan};${devamsizlikPuan};${fazlaMesaiPuan};${iyilestirmePuan}\n`;
+            });
+
+            // Excel için UTF-8 BOM ekle ve noktalı virgül ayırıcı kullan
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `operatör_performans_raporu_${new Date().toLocaleDateString('tr-TR').replace(/\./g, '_')}.csv`;
+            link.click();
+        }
+    </script>
+</body>
+</html>
